@@ -122,10 +122,14 @@ describe("sweepAlgorithm", () => {
  * worse complexity class, both surface here.
  */
 describe("declared complexity matches measured behaviour", () => {
-  const SIZES = defaultSizes(500, 12);
-  const TRIALS = 3;
+  // Sized to still separate every class cleanly (worst R² 0.946) while keeping
+  // the sweep near 700ms. v8 coverage instrumentation slows these generator
+  // loops by roughly 10x, so the explicit timeout below covers instrumented CI
+  // runs rather than leaving them to trip the 5s default.
+  const SIZES = defaultSizes(300, 10);
+  const TRIALS = 2;
 
-  it.each(MEASURABLE_IDS)("%s", (id) => {
+  it.each(MEASURABLE_IDS)("%s", { timeout: 30_000 }, (id) => {
     const declared = parseComplexity(getAlgorithm(id)!.complexity.average);
     expect(declared, `no parseable average-case complexity for ${id}`).not.toBeNull();
 

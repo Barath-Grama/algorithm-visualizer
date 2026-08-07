@@ -23,6 +23,11 @@ export default defineConfig({
       // The algorithms and the pure logic around them are what the suite is
       // actually asserting; presentational components are covered by eye.
       include: ['src/algorithms/**', 'src/lib/**', 'src/hooks/**'],
+      // Browser-only surfaces that cannot execute under the node environment:
+      // the worker needs DedicatedWorkerGlobalScope and the hook that drives it
+      // needs a real Worker. Both are thin adapters over measureAlgorithm,
+      // which is covered, and both are exercised manually in the browser.
+      exclude: ['src/lib/measure.worker.ts', 'src/hooks/useComplexitySweep.ts'],
     },
   },
 })
