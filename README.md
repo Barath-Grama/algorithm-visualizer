@@ -179,3 +179,7 @@ so a change can be clicked through before it is merged.
 Intentionally left out: a backend (this is a client-side teaching tool), and
 force-directed graph layout (a fixed circular layout is clearer at 7 nodes, and
 the Web Worker budget went to the Complexity Lab instead).
+
+## License
+
+[MIT](LICENSE) — use it, fork it, learn from it.
