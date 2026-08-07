@@ -8,15 +8,16 @@ the app itself makes.
 [Complexity Lab](https://algorithm-visualizer-xi-seven.vercel.app/complexity) ·
 [example shared run](https://algorithm-visualizer-xi-seven.vercel.app/?algo=heap-sort&size=28&dist=reversed)
 
-<!--
-  Record a short GIF of a sort running, then the Complexity Lab, and drop it here:
-  ![Demo](docs/demo.gif)
--->
+![Stepping through a bubble sort, then measuring every algorithm in the Complexity Lab](docs/demo.gif)
+
+*Stepping a bubble sort with the pseudocode highlighting in sync, then measuring
+all eight size-parameterised algorithms and checking each fitted growth curve
+against its declared Big-O.*
 
 [![CI](https://github.com/Barath-Grama/algorithm-visualizer/actions/workflows/ci.yml/badge.svg)](https://github.com/Barath-Grama/algorithm-visualizer/actions/workflows/ci.yml)
 
 17 algorithms across 5 categories, each implemented as a generator that yields one
-observable operation at a time. 261 tests. Built with React 19 + TypeScript
+observable operation at a time. 278 tests. Built with React 19 + TypeScript
 (strict), Vite, Tailwind CSS v4, React Query and React Router.
 
 ## Getting started
@@ -24,7 +25,7 @@ observable operation at a time. 261 tests. Built with React 19 + TypeScript
 ```bash
 npm install
 npm run dev       # dev server on http://localhost:5173
-npm test          # 261 tests
+npm test          # 278 tests
 npm run build     # typecheck + production build
 ```
 
@@ -120,7 +121,7 @@ src/
 
 ## Testing
 
-261 tests. The strongest are **property-based cross-checks between independent
+278 tests. The strongest are **property-based cross-checks between independent
 implementations**, which fail if either side regresses:
 
 - Dijkstra and Bellman-Ford must agree on distances from all 7 source nodes
