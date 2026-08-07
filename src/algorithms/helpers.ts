@@ -5,6 +5,37 @@ export function freshMetrics(): StepMetrics {
 }
 
 /**
+ * When set, snapshotters skip building the visualization payload and emit only
+ * metrics.
+ *
+ * The complexity sweep drains the same generators the player uses, but wants
+ * nothing except the final counts. Copying the array and its state buffer on
+ * every step costs O(steps x n) — for a quadratic sort at n=400 that is roughly
+ * 64 million element copies per run, which dominates the measurement entirely.
+ *
+ * A module-scoped flag rather than a parameter because it would otherwise have
+ * to be threaded through every generator signature and every internal recursive
+ * helper. It is only ever set by `withMetricsOnly`, which restores it in a
+ * `finally`, and generators are synchronous, so no interleaving is possible.
+ */
+let metricsOnly = false;
+
+export function isMetricsOnly(): boolean {
+  return metricsOnly;
+}
+
+/** Runs `fn` with visualization payloads disabled. Not reentrant-safe by design. */
+export function withMetricsOnly<T>(fn: () => T): T {
+  const previous = metricsOnly;
+  metricsOnly = true;
+  try {
+    return fn();
+  } finally {
+    metricsOnly = previous;
+  }
+}
+
+/**
  * Builds a reusable "snapshot" function closed over a mutable array + state
  * buffer + metrics object, so each algorithm generator can cheaply emit a
  * step without re-deriving the visualization payload every time.
@@ -17,6 +48,9 @@ export function makeArraySnapshotter(arr: number[], metrics: StepMetrics) {
     codeLine: number[] = [],
     rangeLabel?: string
   ): AlgorithmStep {
+    // The two spreads below are the expensive part of a step; skip them when
+    // nothing will ever render this frame.
+    if (metricsOnly) return { description: "", metrics: { ...metrics }, codeLine: [] };
     return {
       description,
       metrics: { ...metrics },

@@ -11,7 +11,7 @@ import {
   jumpSearchSteps,
   linearSearchSteps,
 } from "@/algorithms/searching";
-import { generateArray, makeRng } from "@/algorithms/helpers";
+import { generateArray, makeRng, withMetricsOnly } from "@/algorithms/helpers";
 import type { Distribution } from "./runAlgorithm";
 
 /**
@@ -75,25 +75,27 @@ export function measureAlgorithm(
   seed: number,
   options: MeasureOptions = {}
 ): StepMetrics {
-  const rng = makeRng(seed * 0x9e3779b9 + 1);
-  let gen;
+  return withMetricsOnly(() => {
+    const rng = makeRng(seed * 0x9e3779b9 + 1);
+    let gen;
 
-  if (id in SORTERS) {
-    const arr = generateArray(n, options.distribution ?? "random", rng);
-    gen = SORTERS[id as keyof typeof SORTERS](arr);
-  } else {
-    const arr = generateArray(n, "random", rng);
-    // Searches sort their own input; the target is drawn from the same values.
-    const target =
-      options.searchTargetMode === "absent"
-        ? Number.MAX_SAFE_INTEGER
-        : arr[Math.floor(rng() * arr.length)];
-    gen = SEARCHES[id as keyof typeof SEARCHES](arr, target);
-  }
+    if (id in SORTERS) {
+      const arr = generateArray(n, options.distribution ?? "random", rng);
+      gen = SORTERS[id as keyof typeof SORTERS](arr);
+    } else {
+      const arr = generateArray(n, "random", rng);
+      // Searches sort their own input; the target is drawn from the same values.
+      const target =
+        options.searchTargetMode === "absent"
+          ? Number.MAX_SAFE_INTEGER
+          : arr[Math.floor(rng() * arr.length)];
+      gen = SEARCHES[id as keyof typeof SEARCHES](arr, target);
+    }
 
-  let last: StepMetrics = { comparisons: 0, swaps: 0, arrayAccesses: 0 };
-  for (const step of gen) last = step.metrics;
-  return last;
+    let last: StepMetrics = { comparisons: 0, swaps: 0, arrayAccesses: 0 };
+    for (const step of gen) last = step.metrics;
+    return last;
+  });
 }
 
 export interface SamplePoint {

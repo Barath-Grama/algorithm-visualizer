@@ -37,6 +37,40 @@
      only ~6 luminance steps apart, which reads as a flat rectangle. */
   --color-board-light: #39414f;
   --color-board-dark: #222834;
+
+}
+
+/*
+ * Chart tokens live in a plain :root block, NOT in @theme.
+ *
+ * Tailwind v4 prunes @theme variables it cannot see referenced literally in the
+ * scanned sources. The series colours are addressed at runtime as
+ * `var(--series-${slot})`, so that string never appears in any file and all
+ * eight were silently dropped from the build — every mark rendered black.
+ * Declared here they are emitted verbatim, which is what a token consumed by JS
+ * rather than by a utility class actually needs.
+ */
+:root {
+  /* Categorical chart series, in fixed slot order. Stepped for a dark surface
+     and validated as a set against --color-bg (#0b0d12): all eight clear the
+     lightness band, chroma floor, adjacent-pair CVD separation (worst ΔE 8.4),
+     the normal-vision floor (worst ΔE 19.3) and 3:1 contrast.
+     Slots are assigned per algorithm and never reshuffled when the selection
+     changes, so a series keeps its colour as others are toggled. Beyond three
+     concurrent series the all-pairs gate cannot be met by hue alone, so the
+     chart also carries marker shapes, direct end-labels and a table view. */
+  --series-1: #3987e5;
+  --series-2: #d95926;
+  --series-3: #199e70;
+  --series-4: #c98500;
+  --series-5: #d55181;
+  --series-6: #008300;
+  --series-7: #9085e9;
+  --series-8: #e66767;
+
+  /* Chart chrome, one step off the plot surface so it stays recessive. */
+  --chart-grid: #1c2029;
+  --chart-axis: #2c323d;
 }
 
 html,

@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { isMetricsOnly, withMetricsOnly } from "@/algorithms/helpers";
 import { getAlgorithm } from "./algorithmRegistry";
+import { DEFAULT_RUN_OPTIONS, runAlgorithm } from "./runAlgorithm";
 import { bestFit, parseComplexity, rankModels, type Observation } from "./curveFit";
 import {
   MEASURABLE_IDS,
@@ -9,6 +11,38 @@ import {
   sweepAlgorithm,
   type MeasurableId,
 } from "./measureAlgorithm";
+
+describe("metrics-only mode", () => {
+  it("does not leak into ordinary runs", () => {
+    measureAlgorithm("bubble-sort", 20, 0);
+    expect(isMetricsOnly()).toBe(false);
+
+    // A normal run after a measurement must still carry full payloads.
+    const { steps } = runAlgorithm("bubble-sort", DEFAULT_RUN_OPTIONS, 0);
+    expect(steps[0].array).toBeDefined();
+    expect(steps[0].description).not.toBe("");
+  });
+
+  it("is restored even if the algorithm throws", () => {
+    expect(() =>
+      withMetricsOnly(() => {
+        throw new Error("boom");
+      })
+    ).toThrow("boom");
+    expect(isMetricsOnly()).toBe(false);
+  });
+
+  it("produces the same counts as a fully-rendered run", () => {
+    // The optimisation must not change what is measured, only what is built.
+    const measured = measureAlgorithm("bubble-sort", 20, 0);
+    const rendered = runAlgorithm(
+      "bubble-sort",
+      { ...DEFAULT_RUN_OPTIONS, arraySize: 20 },
+      0
+    ).steps.at(-1)!.metrics;
+    expect(measured).toEqual(rendered);
+  });
+});
 
 describe("measureAlgorithm", () => {
   it("is deterministic for a given seed", () => {
