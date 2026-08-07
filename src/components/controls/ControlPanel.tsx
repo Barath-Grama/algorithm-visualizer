@@ -4,6 +4,7 @@ import { Slider } from "@/components/ui/Slider";
 import { Select } from "@/components/ui/Primitives";
 import type { AlgorithmMeta } from "@/types";
 import type { RunOptions } from "@/lib/runAlgorithm";
+import { SHORTCUT_HINTS } from "@/hooks/usePlayerShortcuts";
 
 interface ControlPanelProps {
   algorithm: AlgorithmMeta;
@@ -51,21 +52,34 @@ export function ControlPanel({
   return (
     <div className="flex flex-col gap-4 p-4">
       {/* Transport controls */}
-      <div className="flex items-center justify-center gap-2">
-        <Button variant="icon" onClick={onReset} title="Restart">
-          <SkipBack size={16} />
+      <div className="flex items-center justify-center gap-2" role="group" aria-label="Playback">
+        <Button variant="icon" onClick={onReset} title="Restart (Home)" aria-label="Restart">
+          <SkipBack size={16} aria-hidden="true" />
         </Button>
-        <Button variant="icon" onClick={onStepBackward} disabled={index === 0} title="Previous step">
-          <StepBack size={16} />
+        <Button
+          variant="icon"
+          onClick={onStepBackward}
+          disabled={index === 0}
+          title="Previous step (←)"
+          aria-label="Previous step"
+        >
+          <StepBack size={16} aria-hidden="true" />
         </Button>
-        <Button variant="primary" size="md" onClick={playing ? onPause : onPlay} className="w-24">
+        <Button
+          variant="primary"
+          size="md"
+          onClick={playing ? onPause : onPlay}
+          className="w-24"
+          title={playing ? "Pause (Space)" : "Play (Space)"}
+          aria-label={playing ? "Pause" : "Play"}
+        >
           {playing ? (
             <>
-              <Pause size={16} /> Pause
+              <Pause size={16} aria-hidden="true" /> Pause
             </>
           ) : (
             <>
-              <Play size={16} /> Play
+              <Play size={16} aria-hidden="true" /> Play
             </>
           )}
         </Button>
@@ -73,12 +87,18 @@ export function ControlPanel({
           variant="icon"
           onClick={onStepForward}
           disabled={index >= totalSteps - 1}
-          title="Next step"
+          title="Next step (→)"
+          aria-label="Next step"
         >
-          <StepForward size={16} />
+          <StepForward size={16} aria-hidden="true" />
         </Button>
-        <Button variant="icon" onClick={onGoToEnd} title="Jump to end">
-          <SkipForward size={16} />
+        <Button
+          variant="icon"
+          onClick={onGoToEnd}
+          title="Jump to end (End)"
+          aria-label="Jump to end"
+        >
+          <SkipForward size={16} aria-hidden="true" />
         </Button>
       </div>
 
@@ -93,6 +113,8 @@ export function ControlPanel({
           max={Math.max(totalSteps - 1, 0)}
           value={index}
           onChange={(e) => onSeek(Number(e.target.value))}
+          aria-label="Step position"
+          aria-valuetext={`Step ${totalSteps > 0 ? index + 1 : 0} of ${totalSteps}`}
           className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-[var(--color-border)] accent-[var(--color-accent)]"
         />
       </div>
@@ -205,10 +227,21 @@ export function ControlPanel({
 
         {canRegenerate && (
           <Button variant="secondary" onClick={onRegenerate} className="w-full">
-            <Shuffle size={14} /> New Random Input
+            <Shuffle size={14} aria-hidden="true" /> New Random Input
           </Button>
         )}
       </div>
+
+      <div className="h-px bg-[var(--color-border)]" />
+
+      <dl className="flex flex-col gap-1 text-[10px] text-[var(--color-text-muted)]">
+        {SHORTCUT_HINTS.map(([keys, action]) => (
+          <div key={keys} className="flex items-center justify-between">
+            <dt className="mono">{keys}</dt>
+            <dd>{action}</dd>
+          </div>
+        ))}
+      </dl>
     </div>
   );
 }

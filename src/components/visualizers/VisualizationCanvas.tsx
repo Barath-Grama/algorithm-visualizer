@@ -29,7 +29,14 @@ export function VisualizationCanvas({
         ) : (
           <Info size={14} className="shrink-0 text-[var(--color-text-muted)]" />
         )}
-        <p className="truncate text-[13px] text-[var(--color-text-secondary)]">
+        {/* Announced as the playhead moves, so the narration is available to a
+            screen reader rather than only to the eye. */}
+        <p
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+          className="truncate text-[13px] text-[var(--color-text-secondary)]"
+        >
           {atEndOfTruncatedRun
             ? `Stopped at the ${MAX_STEPS.toLocaleString()}-step limit — this run did not finish. Try a smaller input.`
             : step?.description ?? "Configure parameters and press Play to begin."}

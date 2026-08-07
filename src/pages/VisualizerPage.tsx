@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
 import { VisualizationCanvas } from "@/components/visualizers/VisualizationCanvas";
@@ -6,20 +7,33 @@ import { ControlPanel } from "@/components/controls/ControlPanel";
 import { MetricsPanel } from "@/components/panels/MetricsPanel";
 import { CodeViewer } from "@/components/panels/CodeViewer";
 import { Panel } from "@/components/ui/Primitives";
-import { ALGORITHMS, getAlgorithm } from "@/lib/algorithmRegistry";
-import {
-  DEFAULT_RUN_OPTIONS,
-  relevantOptions,
-  runAlgorithm,
-  usesRandomInput,
-  type RunOptions,
-} from "@/lib/runAlgorithm";
+import { getAlgorithm } from "@/lib/algorithmRegistry";
+import { relevantOptions, runAlgorithm, usesRandomInput, type RunOptions } from "@/lib/runAlgorithm";
+import { readUrlState, writeUrlState, type UrlState } from "@/lib/urlState";
 import { useAlgorithmPlayer } from "@/hooks/useAlgorithmPlayer";
+import { usePlayerShortcuts } from "@/hooks/usePlayerShortcuts";
 
 export function VisualizerPage() {
-  const [algorithmId, setAlgorithmId] = useState(ALGORITHMS[0].id);
-  const [options, setOptions] = useState<RunOptions>(DEFAULT_RUN_OPTIONS);
-  const [seed, setSeed] = useState(0);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // The URL is the source of truth for configuration, so a run is linkable and
+  // the back button steps through what you tried. Read once per render rather
+  // than mirrored into state, which would need syncing in both directions.
+  const { algorithmId, options, seed } = useMemo(
+    () => readUrlState(searchParams),
+    [searchParams]
+  );
+
+  const commit = useCallback(
+    (next: Partial<UrlState>) => {
+      setSearchParams(
+        writeUrlState({ algorithmId, options, seed, ...next }),
+        // Configuration changes are navigation: Back should undo them.
+        { replace: false }
+      );
+    },
+    [algorithmId, options, seed, setSearchParams]
+  );
 
   const algorithm = getAlgorithm(algorithmId)!;
 
@@ -38,16 +52,26 @@ export function VisualizerPage() {
 
   const player = useAlgorithmPlayer(steps, runId);
 
+  usePlayerShortcuts({
+    playing: player.playing,
+    onPlay: player.play,
+    onPause: player.pause,
+    onStepForward: player.stepForward,
+    onStepBackward: player.stepBackward,
+    onReset: player.reset,
+    onGoToEnd: player.goToEnd,
+  });
+
   function handleSelectAlgorithm(id: string) {
-    setAlgorithmId(id);
+    commit({ algorithmId: id });
   }
 
   function handleOptionsChange(partial: Partial<RunOptions>) {
-    setOptions((o) => ({ ...o, ...partial }));
+    commit({ options: { ...options, ...partial } });
   }
 
   function handleRegenerate() {
-    setSeed((s) => s + 1);
+    commit({ seed: seed + 1 });
   }
 
   return (
