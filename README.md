@@ -1,124 +1,168 @@
 # Algorithm Visualization Tool
 
-An interactive, web-based platform for visualizing algorithm execution
-step-by-step — built with the same stack described in the accompanying
-project report: **React 19 + TypeScript, Vite, Tailwind CSS, React Router,
-and React Query**, rendering via Canvas/SVG.
+An interactive platform for stepping through algorithm execution one operation at
+a time — and then **measuring** those algorithms to check the complexity claims
+the app itself makes.
+
+**[Live demo](#)** · *(replace with your deployment URL)*
+
+<!--
+  Record a short GIF of a sort running, then the Complexity Lab, and drop it here:
+  ![Demo](docs/demo.gif)
+-->
+
+![CI](https://github.com/USER/REPO/actions/workflows/ci.yml/badge.svg)
+
+17 algorithms across 5 categories, each implemented as a generator that yields one
+observable operation at a time. 261 tests. Built with React 19 + TypeScript
+(strict), Vite, Tailwind CSS v4, React Query and React Router.
 
 ## Getting started
 
 ```bash
 npm install
-npm run dev       # start the dev server (http://localhost:5173)
-npm run build     # type-check + production build → dist/
-npm run preview   # preview the production build locally
+npm run dev       # dev server on http://localhost:5173
+npm test          # 261 tests
+npm run build     # typecheck + production build
 ```
 
 Requires Node.js 18+.
 
-## What's included
-
-**17 algorithms across 5 categories**, matching the report's curriculum:
+## What's in it
 
 | Category | Algorithms |
 |---|---|
-| Sorting | Bubble, Quick (median-of-three pivot), Merge, Heap, Insertion |
+| Sorting | Bubble, Quick (median-of-three), Merge, Heap, Insertion |
 | Searching | Linear, Binary, Jump |
 | Graph | BFS, DFS, Dijkstra, Bellman-Ford, Prim's MST, Kruskal's MST |
-| Dynamic Programming | 0/1 Knapsack, Fibonacci (naive **and** memoized recursion tree) |
+| Dynamic Programming | 0/1 Knapsack, Fibonacci (naive **and** memoized) |
 | Backtracking | N-Queens |
 
-Every algorithm is implemented as a **JS generator function** (`function*`)
-that yields one `AlgorithmStep` per observable operation — a step buffer /
-`StepIterator` pattern, mirroring the architecture described in the report
-(§5.6, `generateSteps → StepIterator → VisualizationState → Canvas`). The
-player materializes the generator once per run so the UI can scrub freely
-forward and backward.
+### The Complexity Lab
 
-### UI
+The headline feature. It sweeps each size-parameterised algorithm across a range
+of input sizes, fits the measured operation counts against candidate growth
+curves by least squares, and reports the best fit beside the Big-O the registry
+declares. **All eight agree:**
 
-- **Sidebar** — category-grouped, searchable algorithm list
-- **Visualization Canvas** — dispatches to one of 5 visualizers depending on
-  the algorithm's data shape:
-  - `ArrayVisualizer` — animated bars (sorting/searching)
-  - `GraphVisualizer` — SVG node-link diagram with live distance labels and
-    frontier (queue/stack) display
-  - `DPTableVisualizer` — heatmap grid for the Knapsack DP table, with
-    active/source-cell highlighting and backtracked-solution overlay
-  - `RecursionTreeVisualizer` — Fibonacci call tree, marking duplicate
-    subtrees (naive) vs. cache hits (memoized). The naive tree reserves each
-    node's horizontal slot from its label, so positions stay fixed as the tree
-    grows instead of re-centring on every step
-  - `ChessboardVisualizer` — N-Queens board with conflict highlighting
-- **Control Panel** — play / pause / step / scrub / restart, speed control,
-  and per-algorithm parameters (input size, data distribution, search
-  target, graph source node, knapsack capacity, `n` and naive/memoized
-  strategy, board size `N`). Only the controls an algorithm actually reads
-  are shown, and only those inputs re-run it — nudging one parameter never
-  re-rolls data another visualization is paused on.
-- **Metrics Panel** — live comparisons, swaps/updates, array accesses, and
-  progress, plus the algorithm's average-case time complexity
-- **Code Viewer** — tabs for Pseudocode / full Code / Description /
-  Complexity, with the current step's source line highlighted. Steps report
-  *pseudocode* line numbers; each algorithm carries a `codeLineMap` that
-  translates those to the corresponding lines of the real implementation, so
-  both tabs highlight the same statement rather than sharing one set of
-  indices across two texts of different lengths.
+| Algorithm | Declared | Measured best fit | R² |
+|---|---|---|---|
+| Bubble Sort | O(n²) | O(n²) | 1.000 |
+| Insertion Sort | O(n²) | O(n²) | 1.000 |
+| Quick Sort | O(n log n) | O(n log n) | 0.993 |
+| Merge Sort | O(n log n) | O(n log n) | 1.000 |
+| Heap Sort | O(n log n) | O(n log n) | 0.999 |
+| Linear Search | O(n) | O(n) | 1.000 |
+| Binary Search | O(log n) | O(log n) | 0.959 |
+| Jump Search | O(√n) | O(√n) | 0.987 |
 
-### Notable implementation choices
+This is also asserted in the test suite, so a mislabelled complexity or an
+implementation that silently regresses to a worse class fails CI.
 
-- **Quick Sort** uses median-of-three pivot selection (as the report
-  recommends) to avoid worst-case degeneration on sorted/reverse-sorted
-  input.
-- **Graph algorithms** share one sample weighted graph (7 nodes, 10 edges)
-  and a circular layout, so you can directly compare how each algorithm
-  traverses or spans the same structure.
-- **Dijkstra vs. Bellman-Ford** were cross-checked in development and agree
-  on shortest-path distances for the sample graph.
-- Steps are capped at 6,000 per run as a safety bound against runaway input
-  sizes (e.g. very large N-Queens boards). A run that hits the cap says so —
-  it reports "Step limit reached" rather than claiming to have completed.
-- **Input is generated from an explicit seed**, not `Math.random`, so a run is
-  reproducible and only the "New Random Input" button changes the data.
+Graph, DP and backtracking algorithms are deliberately excluded: they run on
+fixed sample inputs, so there is no single `n` to sweep against.
 
-### Simplifications vs. the full report scope
+## Architecture
 
-To keep this a runnable, single-pass deliverable, a few report items were
-scoped down intentionally:
-- Graph layout uses a fixed circular layout rather than a full
-  force-directed (Fruchterman-Reingold) simulation — the report's
-  optimization strategy (decoupled Web Worker layout, interpolation) matters
-  most at graph sizes far larger than a teaching demo needs.
-- UI primitives (Button, Slider, Select, Tabs) are small hand-built Tailwind
-  components rather than the full shadcn/ui package, to keep the dependency
-  surface minimal — visually they follow the same design language shown in
-  the report's screenshots.
-- React Query wraps the (static) algorithm registry to mirror the intended
-  data-layer split between library metadata and execution state; there's no
-  backend, so it resolves instantly.
+Every algorithm is a generator (`function*`) yielding one `AlgorithmStep` per
+observable operation. Two consumers drain the same generators:
 
-## Project structure
+- **The player** materialises steps into an array so the UI can scrub freely in
+  both directions.
+- **The measurement path** keeps only the running metrics. Since nothing will be
+  rendered, snapshotters skip building the visualization payload entirely —
+  otherwise every step copies the array and its state buffer, which is
+  `O(steps × n)` garbage for counts nobody looks at.
+
+The algorithms stay the single source of truth for both.
+
+Sweeps run in a **Web Worker**, so a 112-run measurement (~3.5s) never blocks the
+page.
 
 ```
 src/
-  algorithms/        # step generators: sorting.ts, searching.ts, graph.ts,
-                      # dp.ts, backtracking.ts, plus shared helpers
+  algorithms/        # step generators + shared helpers
   components/
-    layout/          # Sidebar, Header
-    controls/        # ControlPanel
-    panels/          # MetricsPanel, CodeViewer
-    visualizers/     # ArrayVisualizer, GraphVisualizer, DPTableVisualizer,
-                      # RecursionTreeVisualizer, ChessboardVisualizer,
-                      # VisualizationCanvas (dispatcher)
-    ui/              # Button, Slider, Select, Tabs, Badge, Panel
+    charts/          # ComplexityChart (hand-rolled SVG)
+    visualizers/     # array, graph, DP table, recursion tree, chessboard
+    layout/ controls/ panels/ ui/
   hooks/
-    useAlgorithmPlayer.ts   # play/pause/step/scrub/speed state machine
-    useAlgorithmLibrary.ts  # React Query wrapper around the registry
+    useAlgorithmPlayer     # play/pause/step/scrub state machine
+    useComplexitySweep     # drives the measurement worker
+    usePlayerShortcuts     # keyboard transport
   lib/
-    algorithmRegistry.ts    # metadata: pseudocode, code, complexity, description
-    runAlgorithm.ts         # materializes a step array for a given algorithm + options
-    queryClient.ts
-  pages/
-    VisualizerPage.tsx      # top-level layout wiring everything together
-  types.ts           # shared domain types (steps, visualization states)
+    algorithmRegistry      # metadata, pseudocode, code, complexity, line maps
+    runAlgorithm           # materialises steps for the visualiser
+    measureAlgorithm       # drains generators for counts only
+    curveFit               # least-squares growth-curve fitting
+    urlState               # query-string serialisation
 ```
+
+### Design notes
+
+- **Input is seeded, not `Math.random`.** A run is reproducible, and only "New
+  Random Input" changes the data — adjusting an unrelated control never re-rolls
+  the array you were watching.
+- **Runs are URL-addressable.** Algorithm, options and seed live in the query
+  string, so a specific run can be linked and the Back button undoes changes.
+- **Step highlighting is mapped, not shared.** Steps report *pseudocode* line
+  numbers; each algorithm carries a `codeLineMap` translating those to the real
+  implementation, so both tabs highlight the same statement instead of applying
+  one set of indices to two texts of different lengths.
+- **Chart colour follows the entity.** Series keep their colour and marker shape
+  as others are toggled. The eight-slot palette clears the adjacent-pair CVD gate
+  against this surface but not the all-pairs gate, so identity is additionally
+  carried by marker shape, direct end-labels and a raw-data table.
+- **Keyboard transport.** Space, arrows, Home/End, R — ignored while typing.
+
+## Testing
+
+261 tests. The strongest are **property-based cross-checks between independent
+implementations**, which fail if either side regresses:
+
+- Dijkstra and Bellman-Ford must agree on distances from all 7 source nodes
+- Prim and Kruskal must find the same total MST weight
+- Knapsack's DP table is checked against a brute-force subset search
+- N-Queens solutions are verified for column and diagonal conflicts
+- Measured growth curves must match declared complexity
+
+The suite was **validated by mutation**: flipping a sort comparison, restoring
+the jump-search loop bound, reverting the player's reset key, and corrupting a
+`codeLineMap` entry each turn it red. A fifth mutation initially survived — the
+line-map test only ran default options, so searches always found their target and
+the miss-path lines were never exercised. It now sweeps 17 option variants.
+
+## Engineering notes
+
+Three bugs worth writing down, because the diagnosis was more interesting than
+the fix:
+
+**Bars rendered at zero height.** The bar track used `align-items: flex-end`, so
+each column's height was content-based rather than stretched. A percentage height
+against an auto-height parent resolves to `auto` — every bar computed to `0px`,
+and all eight array algorithms rendered an empty canvas. Fixed by giving the bar
+its own `flex-1` track so the percentage resolves against the plot area alone.
+
+**Jump search looped forever.** The loop was bounded on `curr < n`, but `curr`
+pins at `n - 1` and can no longer advance, so any target above the array maximum
+spun until the 6000-step cap masked it. The guard that was meant to catch this
+was unreachable. Bounded on `curr < n - 1` instead.
+
+**A render-phase reset froze the whole app.** Resetting the playhead during
+render (rather than in an effect, which flashes a stale frame) is the right
+pattern, but it compared the `steps` array by identity — and `useMemo`
+re-allocates that array on every render-phase retry, so the reset re-fired
+forever and *no* state update could commit. Clicking anything did nothing. Keying
+the reset on a stable run id makes it settle in one retry.
+
+A fourth, found while building the chart: **Tailwind v4 prunes `@theme`
+variables it cannot see referenced literally.** The series colours are addressed
+as `` var(`--series-${slot}`) `` at runtime, so that string appears in no source
+file and all eight were dropped from the build — every mark rendered black. Chart
+tokens now live in a plain `:root` block.
+
+## Scope
+
+Intentionally left out: a backend (this is a client-side teaching tool), and
+force-directed graph layout (a fixed circular layout is clearer at 7 nodes, and
+the Web Worker budget went to the Complexity Lab instead).
