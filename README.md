@@ -28,7 +28,8 @@ npm test          # 261 tests
 npm run build     # typecheck + production build
 ```
 
-Requires Node.js 18+.
+Requires Node.js `^20.19`, `^22.12`, or `>=24` — the floor Vite 8 and Vitest
+actually impose. A `.nvmrc` pins the version CI uses (`nvm use`).
 
 ## What's in it
 
