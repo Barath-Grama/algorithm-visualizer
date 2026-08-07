@@ -1,0 +1,92 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Manrope", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+
+  /* Core surfaces */
+  --color-bg: #0b0d12;
+  --color-surface: #12151c;
+  --color-surface-raised: #171b24;
+  --color-surface-hover: #1d222d;
+  --color-border: #242a36;
+  --color-border-soft: #1a1e28;
+
+  /* Text */
+  --color-text-primary: #e8eaf0;
+  --color-text-secondary: #9aa3b5;
+  --color-text-muted: #626b7d;
+
+  /* Brand / accent */
+  --color-accent: #6366f1;
+  --color-accent-hover: #7678f5;
+  --color-accent-soft: #6366f11a;
+
+  /* Semantic algorithm-state colors */
+  --color-compare: #f5a524;
+  --color-swap: #f5455c;
+  --color-sorted: #22c55e;
+  --color-pivot: #a855f7;
+  --color-visited: #22c55e;
+  --color-queued: #f5a524;
+  --color-current: #f5455c;
+  --color-unvisited: #4b5568;
+  --color-path: #6366f1;
+
+  /* Chessboard squares. Deliberately not the generic surface tokens: those sit
+     only ~6 luminance steps apart, which reads as a flat rectangle. */
+  --color-board-light: #39414f;
+  --color-board-dark: #222834;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text-primary);
+  font-family: var(--font-display);
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  border-color: var(--color-border);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-surface-hover);
+  border-radius: 999px;
+  border: 2px solid var(--color-bg);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-border);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+.mono {
+  font-family: var(--font-mono);
+}
