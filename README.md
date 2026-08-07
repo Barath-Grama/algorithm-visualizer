@@ -165,6 +165,15 @@ as `` var(`--series-${slot}`) `` at runtime, so that string appears in no source
 file and all eight were dropped from the build — every mark rendered black. Chart
 tokens now live in a plain `:root` block.
 
+## CI & deployment
+
+Every push and pull request runs typecheck, lint, the full suite with coverage,
+and a production build — each as a separate step, so a red run names the gate
+that actually broke. Coverage is uploaded as an artifact.
+
+`main` deploys to Vercel automatically. Pull requests get their own preview URL,
+so a change can be clicked through before it is merged.
+
 ## Scope
 
 Intentionally left out: a backend (this is a client-side teaching tool), and
