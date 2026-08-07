@@ -4,7 +4,9 @@ An interactive platform for stepping through algorithm execution one operation a
 a time — and then **measuring** those algorithms to check the complexity claims
 the app itself makes.
 
-**[Live demo](#)** · *(replace with your deployment URL)*
+**[▶ Live demo](https://algorithm-visualizer-xi-seven.vercel.app)** ·
+[Complexity Lab](https://algorithm-visualizer-xi-seven.vercel.app/complexity) ·
+[example shared run](https://algorithm-visualizer-xi-seven.vercel.app/?algo=heap-sort&size=28&dist=reversed)
 
 <!--
   Record a short GIF of a sort running, then the Complexity Lab, and drop it here:
