@@ -11,7 +11,7 @@ the app itself makes.
   ![Demo](docs/demo.gif)
 -->
 
-![CI](https://github.com/USER/REPO/actions/workflows/ci.yml/badge.svg)
+[![CI](https://github.com/Barath-Grama/algorithm-visualizer/actions/workflows/ci.yml/badge.svg)](https://github.com/Barath-Grama/algorithm-visualizer/actions/workflows/ci.yml)
 
 17 algorithms across 5 categories, each implemented as a generator that yields one
 observable operation at a time. 261 tests. Built with React 19 + TypeScript
